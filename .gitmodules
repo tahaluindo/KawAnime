@@ -1,0 +1,6 @@
+[submodule "bindings/name_parser/lib/anitomy"]
+	path = bindings/name_parser/lib/anitomy
+	url = https://github.com/erengy/anitomy
+[submodule "bindings/torrent/lib/libtorrent"]
+	path = bindings/torrent/lib/libtorrent
+	url = https://github.com/arvidn/libtorrent

@@ -1,0 +1,59 @@
+image: Visual Studio 2017
+
+cache:
+  - '%USERPROFILE%\.electron'
+
+skip_tags: true
+
+platform:
+  - x64
+
+init:
+  - git config --global core.autocrlf input
+
+install:
+  - ps: Install-Product node 12 x64
+  - git submodule update --init --recursive
+
+  # - curl --output mpv.7z https://mpv.srsfckn.biz/mpv-dev-latest.7z
+  # - 7z x -ompv mpv.7z
+  # - copy mpv\x86_64\mpv-1.dll C:\Windows\system32\
+  - copy %APPVEYOR_BUILD_FOLDER%\public\mpv\mpv-1.dll C:\Windows\system32\
+
+  - set ROOT_DIRECTORY=%CD%
+  - if not defined compiler ( set compiler="" )
+  - if not defined crypto ( set crypto=built-in )
+  - if not defined linkflags ( set linkflags="" )
+  - if not defined include ( set include="" )
+  - ps: '"using msvc : 14.1 ;`nusing gcc : : : <cxxflags>-std=c++14 ;`n" | Set-Content $env:HOMEDRIVE\$env:HOMEPATH\user-config.jam'
+  - set BOOST_ROOT=c:\Libraries\boost_1_69_0
+  - set BOOST_BUILD_PATH=%BOOST_ROOT%\tools\build
+  - set PATH=c:\msys64\mingw32\bin;%PATH%
+  - type %HOMEDRIVE%%HOMEPATH%\user-config.jam
+  - cd %BOOST_BUILD_PATH%
+  - bootstrap.bat
+  - .\b2 --prefix=c:\boost-build install
+  - set "PATH=c:\boost-build\bin;%PATH%"
+  - cd %BOOST_ROOT%
+  - b2 cxxstd=14 address-model=64 threading=multi --with-system --with-date_time --toolset=msvc-14.1 link=static runtime-link=shared stage
+
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - npm install
+  - dir %APPVEYOR_BUILD_FOLDER%\public
+
+build: off
+
+artifacts:
+  - path: 'public\*.dll'
+  - path: 'public\*.node'
+  - path: 'dist\*.exe'
+
+test_script:
+  - node --version
+  - npm --version
+  - npm run lint
+  - npm run dist:win
+  - npm run test
+
+deploy_script:
+  - IF [%APPVEYOR_REPO_BRANCH%]==[master] npm run publish:win && npm run publish:portable

@@ -1,0 +1,48 @@
+.DS_Store
+node_modules
+/dist
+
+/test/screenshots/*.png
+downloads/
+
+# local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
+
+# Electron-builder output
+/dist_electron
+/dist
+
+# Coverage
+coverage
+.nyc_output
+
+# Mocha reporter
+mochawesome-report
+
+# C++ Bindings
+bindings/build
+
+# External libs binaries
+public/*.dylib
+public/*.dll
+public/*.node
+public/mpv/*
+# Temporary
+!public/mpv/*.dll
+!public/mpv/.gitkeep
+!public/mpv/macos

@@ -1,0 +1,91 @@
+language: node_js
+node_js: "12"
+
+jobs:
+  include:
+    -
+      os: osx
+      name: Mac - Libtorrent Build
+      osx_image: xcode11.2
+      addons:
+        homebrew:
+          packages: ['ninja', 'mpv']
+          update: true
+      env:
+        - USE_HARD_LINKS=false # From https://github.com/electron-userland/electron-builder/issues/3179
+      install:
+        - npm install
+      script:
+        - "npm run collect:dylibs"
+        - npm run lint
+        - npm run pack
+        # - npm run test
+
+    - 
+      os: linux
+      name: Linux - Libtorrent Build
+      dist: bionic
+      addons:
+        apt:
+          update: true
+          packages:
+            - g++-5
+            - gcc-5
+            - ninja-build
+            - libboost-system-dev
+            - libmpv1
+            - libavformat-dev
+      env:
+        - CC=gcc-5
+        - CXX=g++-5
+        - USE_HARD_LINKS=false # From https://github.com/electron-userland/electron-builder/issues/3179
+      services:
+        - xvfb
+      before_script:
+        - "export DISPLAY=:99.0"
+      install:
+        - npm install
+      script:
+        - npm run lint
+        - npm run pack
+        - npm run test
+
+    - 
+      os: linux
+      name: Linux - Libtorrent Pre-installed
+      dist: focal
+      addons:
+        apt:
+          update: true
+          packages:
+            - ninja-build
+            - libboost-system-dev
+            - libmpv1
+            - libavformat-dev
+      env:
+        - CC=gcc
+        - CXX=g++
+        - CMAKE_C_COMPILER=gcc
+        - CMAKE_CXX_COMPILER=g++
+        - USE_HARD_LINKS=false # From https://github.com/electron-userland/electron-builder/issues/3179
+      services:
+        - xvfb
+      before_script:
+        - "export DISPLAY=:99.0"
+      before_install:
+        # Installing Libtorrent
+        - git clone --branch=RC_1_2 https://github.com/arvidn/libtorrent
+        - cd libtorrent
+        - mkdir build && cd build
+        - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -G Ninja ..
+        - ninja -j4
+        - sudo ninja install
+      install:
+        - npm install
+      script:
+        - npm run lint
+        - npm run pack
+        - npm run test
+
+notifications:
+  email: false
